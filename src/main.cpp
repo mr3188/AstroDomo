@@ -1,9 +1,30 @@
 #include <Arduino.h>
+#include <astrodomo.hpp>
+#include <OutdoorModule.hpp>
+#include <TempSensorsOW.hpp>
+
+adbase *module=NULL;
 
 void setup() {
-  // put your setup code here, to run once:
+
+  adbase *uninitializedModule= new adbase();
+  
+  
+  switch ( uninitializedModule->moduleType())
+  {
+    case NODE_TYPE_TEMP_SENSORS_OW:
+        module=new TempSensorsOW();
+      break;
+    case NODE_TYPE_OUTDOOR:
+        module=new OutdoorModule();
+      break;   
+    default:
+      Serial.println("Incorrect module type: "+uninitializedModule->moduleType());
+      break;
+  }
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  module.readSensorValues();
+  module.
 }
