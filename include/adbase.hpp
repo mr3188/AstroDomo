@@ -13,13 +13,16 @@ class
 adbase
 {
 private:
+
+    int moduleType;
+    char hostname[128];
     //SSID of your network
     char ssid[128]; //SSID of your Wi-Fi router
     char pass[64] ; //Password of your Wi-Fi router
     const char* filename ;
     
     char mqttClientName[128];
-    char mqttServer[18] ;
+    char mqttServer[128] ;
     uint mqttPort=1883;
 
     std::map<std::string, std::string> config;
@@ -45,7 +48,8 @@ public:
     adbase();
     ~adbase();
     
-    int moduleType();
+    int getModuleType();
+    int getSleepTime();
     virtual bool readSensorValues();
     virtual void publishValues();
 };

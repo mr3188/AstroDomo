@@ -12,14 +12,18 @@ struct addr
       byte values[8];
     };
 
-
+struct owSensor
+  {
+      addr address;
+      float temp;
+  };
 
 class TempSensorsOW : public adbase
 {
   private:
     uint8_t DS18S20_Pin = D2; //DS18S20 Signal pin on digital 2
     OneWire *ds;  // temperature sensors
-    addr address[10];
+    owSensor sensors[10];
     int devNumber=0;
     char stringValue[64];
 
@@ -29,10 +33,11 @@ class TempSensorsOW : public adbase
   public:
     TempSensorsOW();
     ~TempSensorsOW();
-    void printAddress(addr deviceAddr);
+    void printAddress(owSensor sensor);
     void getDeviceAddress();    
-    float  getTemp(addr address);    
+    float  getTemp(owSensor sensor);    
     bool  readSensorValues();
+    void publishValues();
 };
 
 #endif

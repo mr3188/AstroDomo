@@ -5,15 +5,15 @@
  * 
  **/
 
-void  TempSensorsOW::printAddress(addr deviceAddr)
+void  TempSensorsOW::printAddress(owSensor sensor)
 {
   for( int i = 0; i < 8; i++) {
       Serial.print("0x");
-      if (deviceAddr.values[i] < 16) {
+      if (sensor.address.values[i] < 16) {
         Serial.print('0');
       }
       // print each byte in the address array in hex format
-      Serial.print(deviceAddr.values[i], HEX);
+      Serial.print(sensor.address.values[i], HEX);
       if (i < 7) {
         Serial.print(", ");
       }
@@ -32,15 +32,15 @@ void TempSensorsOW::getDeviceAddress() {
   Serial.println("Search for devices...\n\r");
   
   devNumber=0;
-  while(ds->search(address[devNumber].values)) {
+  while(ds->search(sensors[devNumber].address.values)) {
    
-    printAddress(address[devNumber]);
+    printAddress(sensors[devNumber]);
 
     // a check to make sure that what we read is correct.
 
-     byte crc=OneWire::crc8(address[devNumber].values, 7);
+     byte crc=OneWire::crc8(sensors[devNumber].address.values, 7);
 
-    if ( crc != address[devNumber].values[7]) {
+    if ( crc != sensors[devNumber].address.values[7]) {
         Serial.print("CRC is not valid!\n");
         //return;
     } 
@@ -63,41 +63,26 @@ TempSensorsOW::~TempSensorsOW()
 
 }
 
-/**
-void setup(void) {
- 
- 
-  getDeviceAddress();
 
-  for(int i=0 ; i<devNumber; i++)
-  {   
-    printAddress(address[i]);
-    sprintf(mqttPayload, "%02X%02X%02X%02X%02X%02X%02X%02X", address[i].values[0],address[i].values[1],address[i].values[2], 
-        address[i].values[3], address[i].values[4], address[i].values[5], address[i].values[6], address[i].values[7]);
-    
-    publish("/caldera/temp/startup",  mqttPayload);
-    Serial.println(mqttPayload);
-  }
-}
 
-float  TempSensorsOW::getTemp(addr address){
+float  TempSensorsOW::getTemp(owSensor sensor){
   //returns the temperature from one DS18S20 in DEG Celsius
 
   byte data[12];
 
-  ds.reset();
-  ds.select(address.values);
-  ds.write(0x44, 1); // start conversion, with parasite power on at the end
+  ds->reset();
+  ds->select(sensor.address.values);
+  ds->write(0x44, 1); // start conversion, with parasite power on at the end
   delay(1000);
-  ds.reset();
-  ds.select(address.values);    
-  ds.write(0xBE); // Read Scratchpad
+  ds->reset();
+  ds->select(sensor.address.values);    
+  ds->write(0xBE); // Read Scratchpad
 
   for (int i = 0; i < 9; i++) { // we need 9 bytes
-    data[i] = ds.read();
+    data[i] = ds->read();
   }
 
-  ds.reset_search();
+  ds->reset_search();
 
   byte MSB = data[1];
   byte LSB = data[0];
@@ -105,12 +90,12 @@ float  TempSensorsOW::getTemp(addr address){
   float tempRead = ((MSB << 8) | LSB); //using two's compliment
   float temp = tempRead / 16;
 
-  return  temp;
+  sensor.temp=temp;
 
- 
+  return  temp;
 }
 
-*/
+
 
 bool TempSensorsOW::readSensorValues(void) {
 
@@ -118,19 +103,33 @@ bool TempSensorsOW::readSensorValues(void) {
 
   for(int i=0 ; i<devNumber; i++)
   {
-    float temp = getTemp(address[i]);
-    int iTemp = (int) temp;
-   
-    sprintf(stringValue, "{\"sensor_name\": \"%02x%02x%02x%02x%02x%02x%02x%02x\", \"temp\" :  %3d }", address[i].values[0], address[i].values[1],
-      address[i].values[2], address[i].values[3], address[i].values[4], address[i].values[5], address[i].values[6], address[i].values[7],  iTemp);
-    
-    Serial.println(stringValue);
-   
-    doneOk= doneOk || publishMQTT(mqttTopic,  stringValue);    
+    sensors[i].temp = getTemp(sensors[i]);   
   }
   delay(1);  
 
   return doneOk; 
 };
 
+void TempSensorsOW::publishValues() {
 
+  for(int i=0 ; i<devNumber; i++)
+  {    
+
+    sprintf(stringValue, "{\"sensor_name\": \"%02x%02x%02x%02x%02x%02x%02x%02x\", \"temp\" :  %3f }", 
+        sensors[i].address.values[0], 
+        sensors[i].address.values[1],
+        sensors[i].address.values[2], 
+        sensors[i].address.values[3],
+        sensors[i].address.values[4], 
+        sensors[i].address.values[5], 
+        sensors[i].address.values[6],
+        sensors[i].address.values[7],  
+        sensors[i].temp);
+    
+    Serial.println(stringValue);
+   
+    if(!publishMQTT(mqttTopic,  stringValue))
+      Serial.println("Error publishing to MQTT server.");
+  }
+}
+  

@@ -6,7 +6,7 @@
 
 adbase::adbase()
 {
-    
+    readConfigFile();
 }
 
 adbase::~adbase()
@@ -14,35 +14,18 @@ adbase::~adbase()
     
 }
 
-int adbase::moduleType()
+int adbase::getModuleType()
 {
-
-  return 0;
+  return moduleType;
 }
 
-
-/**
- * Do all loop work for this node
-
-void adbase::loop()
-{
-
-  // all node types should check voltage
-  // if input voltage is under a given value an mqtt message must be published
-
-
-  // Read config file so we can identify module class
-  //
-
-}
-**/
 
 void adbase::connectWiFi()
 {  
   Serial.print("Connecting Wifi...");
 
   WiFi.mode(WIFI_STA);
-  WiFi.hostname("outdoormodule");
+  WiFi.hostname(hostname);
   WiFi.begin(ssid, pass);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -85,7 +68,19 @@ void adbase::readConfigFile()
         configLine.trim();
         configLine.replace(" ", "");
         
-        if(configLine.startsWith("ssid"))
+        if(configLine.startsWith("module_type"))
+        {              
+          moduleType=atoi(configLine.substring(configLine.indexOf("=")+1).c_str() );            
+          Serial.print("Value of module_type=");
+          Serial.println(moduleType);
+        }
+        else if(configLine.startsWith("host_name"))
+        {                    
+          configLine.toCharArray(hostname, sizeof(hostname),configLine.indexOf("=")+1 );
+          Serial.print("Value of hoostname=");
+          Serial.println(hostname);
+        }
+        else if(configLine.startsWith("ssid"))
         {                    
           configLine.toCharArray(ssid, sizeof(ssid),configLine.indexOf("=")+1 );
           Serial.print("Value of ssid=");
@@ -136,8 +131,6 @@ bool adbase::connectMQTT()
 {
     // Connect to wifi and send a startup message by MQTT
 
-  adbase::connectWiFi();
-
   mqttClient.setClient(wifiClient);
   mqttClient.setServer(mqttServer, mqttPort);
   
@@ -152,7 +145,6 @@ bool adbase::connectMQTT()
 
 bool adbase::publishMQTT(std::string topic, std::string payload)
 {
-
     if(!adbase::wifiClient.connected())
         connectWiFi();
     
@@ -177,5 +169,18 @@ void adbase::printNetworkStatus()
  **/
 int adbase::chkVoltage()
 {
-
+  return 0;
 }
+
+ bool adbase::readSensorValues()
+ {
+   return true;
+ }
+
+ void adbase::publishValues()
+ {}
+
+ int adbase::getSleepTime()
+ {
+   return sleepTime;
+ }

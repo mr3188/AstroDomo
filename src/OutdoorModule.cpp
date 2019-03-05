@@ -24,35 +24,33 @@ bool OutdoorModule::readSensorValues()
   {
     values[i]=analogRead(PIN_A0);
     daylight=daylight+values[i];
-    Serial.println(values[i]);  
     delay(1000);  
   }
 
   daylight=daylight/10;  
 
   return true;
+
 }
 
 void OutdoorModule::publishValues() {
-  
 
   sprintf(stringValue, "%f", event.relative_humidity); 
-  if(!publishMQTT("/outdoor/humidity/value",  stringValue))
+  if(!publishMQTT("outdoor/humidity/value",  stringValue))
   {
     Serial.println("Error publishing to MQTT server.");
     return;
   }
 
   sprintf(stringValue, "%f", event.temperature); 
-  if(!publishMQTT("/outdoor/temperature/value",  stringValue))
+  if(!publishMQTT("outdoor/temperature/value",  stringValue))
   {
     Serial.println("Error publishing to MQTT server.");
     return;
   }
 
-
   sprintf(stringValue, "%d", daylight); 
-  if(!publishMQTT(mqttTopic,  stringValue))
+  if(!publishMQTT("outdoor/daylight/value",  stringValue))
   {
     Serial.println("Error publishing to MQTT server.");
     return;

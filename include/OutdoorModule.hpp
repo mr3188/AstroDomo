@@ -23,7 +23,7 @@ private:
 public:
     OutdoorModule();
     ~OutdoorModule();    
-    void readSensorValues();
+    bool readSensorValues();
     void publishValues();
     
 };
