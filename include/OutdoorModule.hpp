@@ -16,7 +16,9 @@ private:
     char mqttTopic[128]; //"/outdoor/daylight/value"
     int values[10];
     int daylight=0;
-    char stringValue[10];
+    float temperature=0;
+    float relative_humidity=0;
+    char stringValue[20];
     sensors_event_t event;  
 
 

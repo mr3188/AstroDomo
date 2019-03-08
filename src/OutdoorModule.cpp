@@ -14,8 +14,12 @@ bool OutdoorModule::readSensorValues()
 {
   // Get temp and humidity values
   dht->begin();
+
   dht->temperature().getEvent(&event);
+  temperature=event.temperature;
+
   dht->humidity().getEvent(&event);
+  relative_humidity=event.relative_humidity;
 
   // Get daylight value
   daylight=0;
@@ -35,21 +39,27 @@ bool OutdoorModule::readSensorValues()
 
 void OutdoorModule::publishValues() {
 
-  sprintf(stringValue, "%f", event.relative_humidity); 
-  if(!publishMQTT("outdoor/humidity/value",  stringValue))
-  {
-    Serial.println("Error publishing to MQTT server.");
-    return;
-  }
+   if (!isnan(temperature)) {
+    sprintf(stringValue, "%f", temperature); 
+    Serial.println(stringValue);
+    if(!publishMQTT("outdoor/temperature/value",  stringValue))    
+      Serial.println("Error publishing to MQTT server.");
+   }
+   else
+    Serial.println(F("Error reading temperature!"));
+ 
+  if (!isnan(relative_humidity)) {
+    sprintf(stringValue, "%f", relative_humidity); 
+    Serial.println(stringValue);
+    if(!publishMQTT("outdoor/humidity/value",  stringValue))    
+      Serial.println("Error publishing to MQTT server.");
+   }
+   else
+    Serial.println(F("Error reading humidity!"));
 
-  sprintf(stringValue, "%f", event.temperature); 
-  if(!publishMQTT("outdoor/temperature/value",  stringValue))
-  {
-    Serial.println("Error publishing to MQTT server.");
-    return;
-  }
-
+  
   sprintf(stringValue, "%d", daylight); 
+   Serial.println(stringValue);
   if(!publishMQTT("outdoor/daylight/value",  stringValue))
   {
     Serial.println("Error publishing to MQTT server.");

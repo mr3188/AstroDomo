@@ -36,5 +36,5 @@ void setup() {
 void loop() {
   module->readSensorValues();
   module->publishValues();
-  delay(module->getSleepTime());
+  delay(module->getSleepTime()*1000);
 }
