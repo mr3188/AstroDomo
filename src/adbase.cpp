@@ -74,10 +74,17 @@ void adbase::readConfigFile()
           Serial.print("Value of module_type=");
           Serial.println(moduleType);
         }
+        else if(configLine.startsWith("mqttClientName"))
+        {                    
+          configLine.toCharArray(mqttClientName, sizeof(mqttClientName),configLine.indexOf("=")+1 );
+          Serial.print("Value of mqttClientName=");
+          Serial.println(mqttClientName);
+        }
+        
         else if(configLine.startsWith("host_name"))
         {                    
           configLine.toCharArray(hostname, sizeof(hostname),configLine.indexOf("=")+1 );
-          Serial.print("Value of hoostname=");
+          Serial.print("Value of hostname=");
           Serial.println(hostname);
         }
         else if(configLine.startsWith("ssid"))

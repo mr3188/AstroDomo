@@ -60,7 +60,7 @@ TempSensorsOW::TempSensorsOW()
 
 TempSensorsOW::~TempSensorsOW()
 {
-
+  delete(ds);
 }
 
 
@@ -133,3 +133,4 @@ void TempSensorsOW::publishValues() {
   }
 }
   
+
