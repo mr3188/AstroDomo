@@ -22,6 +22,7 @@ void  TempSensorsOW::printAddress(owSensor sensor)
     }
 }
 
+
 /**
  * Search OneWire network to find connected devices
  * List of devices are stored in an array
